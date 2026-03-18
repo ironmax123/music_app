@@ -64,7 +64,8 @@ class Engine {
     if (!this.ctx || !this.master) return;
 
     // ユーザー操作起点で resume（自動再生制限対応）
-    if (this.ctx.state === "suspended") await this.ctx.resume();
+    // state確認に関わらず一度 resume を試みる方が確実
+    try { await this.ctx.resume(); } catch {}
 
     this.stop();
     this.playing = true;
@@ -103,21 +104,34 @@ class Engine {
         node.osc.connect(node.gain);
         node.gain.connect(this.master!);
 
-        // ここで Web Audio API を使用: 再生予約（envelope 簡易）
-        node.osc.frequency.setValueAtTime(n.p, startAt);
-        node.gain.gain.setValueAtTime(0.0001, startAt);
-        node.gain.gain.linearRampToValueAtTime(amp, startAt + 0.01);
-        node.gain.gain.linearRampToValueAtTime(0.0001, stopAt);
-
-        // setTimeout 経由だと遅延で "過去時刻に start" になり無音になることがあるため
-        // ここで直ちに未来時刻 start/stop を予約する
-        const safeStart = Math.max(startAt, this.ctx!.currentTime + 0.001);
-        try {
-          node.osc.start(safeStart);
-          node.started = true;
-          this.activeVoices.add(node);
-          node.osc.stop(stopAt);
-        } catch {}
+        const now = this.ctx!.currentTime;
+        const imminent = startAt - now < 0.02; // 20ms 以内は即時スタートに切替
+        if (imminent) {
+          // 即時開始パス
+          try {
+            node.osc.frequency.setValueAtTime(n.p, now);
+            node.gain.gain.setValueAtTime(0.0001, now);
+            node.gain.gain.linearRampToValueAtTime(amp, now + 0.01);
+            node.gain.gain.linearRampToValueAtTime(0.0001, now + durSec);
+            node.osc.start(now);
+            node.started = true;
+            this.activeVoices.add(node);
+            node.osc.stop(now + durSec);
+          } catch {}
+        } else {
+          // 未来予約パス
+          // ここで Web Audio API を使用: 再生予約（envelope 簡易）
+          node.osc.frequency.setValueAtTime(n.p, startAt);
+          node.gain.gain.setValueAtTime(0.0001, startAt);
+          node.gain.gain.linearRampToValueAtTime(amp, startAt + 0.01);
+          node.gain.gain.linearRampToValueAtTime(0.0001, stopAt);
+          try {
+            node.osc.start(startAt);
+            node.started = true;
+            this.activeVoices.add(node);
+            node.osc.stop(stopAt);
+          } catch {}
+        }
 
         // 後片付け（disconnect）は再生終了の少し後に行う
         const cleanupId = window.setTimeout(() => {
