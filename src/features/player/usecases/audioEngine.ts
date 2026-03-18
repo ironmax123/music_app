@@ -5,7 +5,13 @@
 
 import type { Composition, Part, Note } from "../data/compositions/types";
 
-type OscRef = { osc: OscillatorNode; gain: GainNode; started: boolean };
+type OscRef = {
+  osc: OscillatorNode;
+  gain: GainNode;
+  started: boolean;
+  extras?: OscillatorNode[]; // 追加ハーモニクス用
+  ratios?: number[]; // extras用の周波数倍率
+};
 
 type PlayOptions = { durationSec?: number; onEnded?: () => void };
 
@@ -119,7 +125,27 @@ class Engine {
         const node = this.createVoice(part.instrument, n);
         node.gain.gain.value = n.v * (part.instrument === "pad" ? 0.5 : 1);
         const amp = node.gain.gain.value;
-        node.osc.connect(node.gain);
+        // instrument-specific coloration
+        let inputNode: AudioNode = node.osc;
+        // guitar: emphasize pick attack (bandpass)
+        if (part.instrument === "guitar") {
+          const bp = this.ctx.createBiquadFilter();
+          bp.type = "bandpass";
+          bp.frequency.setValueAtTime(n.p * 2, startAt);
+          bp.Q.value = 6;
+          inputNode.connect(bp);
+          inputNode = bp;
+        }
+        // piano/upright: add gentle tone lowpass with short decay
+        let toneNode: BiquadFilterNode | null = null;
+        if (part.instrument === "piano" || part.instrument === "upright") {
+          toneNode = this.ctx.createBiquadFilter();
+          toneNode.type = "lowpass";
+          inputNode.connect(toneNode);
+          inputNode = toneNode;
+        }
+        inputNode.connect(node.gain);
+        if (node.extras) node.extras.forEach((e) => e.connect(node.gain));
         node.gain.connect(this.master!);
 
         const now = this.ctx!.currentTime;
@@ -127,27 +153,71 @@ class Engine {
         if (imminent) {
           // 即時開始パス
           try {
-            node.osc.frequency.setValueAtTime(n.p, now);
-            node.gain.gain.setValueAtTime(0.0001, now);
-            node.gain.gain.linearRampToValueAtTime(amp, now + 0.01);
-            node.gain.gain.linearRampToValueAtTime(0.0001, now + durSec);
+          if (part.instrument === "piano") {
+            // slight detune for body
+            node.osc.type = "triangle";
+            try { node.osc.detune.setValueAtTime(-3, now); } catch {}
+          }
+          node.osc.frequency.setValueAtTime(n.p, now);
+            // extras（倍音）
+            if (node.extras && node.ratios) {
+              node.extras.forEach((e, i) => {
+                const r = node.ratios![i] ?? 1;
+                try { e.frequency.setValueAtTime(n.p * r, now); } catch {}
+              });
+            }
+          node.gain.gain.setValueAtTime(0.0001, now);
+          node.gain.gain.linearRampToValueAtTime(amp, now + (part.instrument === "piano" ? 0.005 : 0.01));
+          node.gain.gain.linearRampToValueAtTime(0.0001, now + durSec);
+          // tone envelope
+          if (toneNode) {
+            const hi = Math.min(10000, n.p * (part.instrument === "upright" ? 6 : 8));
+            const lo = Math.min(2000, n.p * (part.instrument === "upright" ? 2 : 3));
+            try {
+              toneNode.frequency.setValueAtTime(hi, now);
+              toneNode.frequency.exponentialRampToValueAtTime(Math.max(200, lo), now + 0.2);
+            } catch {}
+          }
             node.osc.start(now);
+            if (node.extras) node.extras.forEach((e) => { try { e.start(now); } catch {} });
             node.started = true;
             this.activeVoices.add(node);
             node.osc.stop(now + durSec);
+            if (node.extras) node.extras.forEach((e) => { try { e.stop(now + durSec); } catch {} });
           } catch {}
         } else {
           // 未来予約パス
           // ここで Web Audio API を使用: 再生予約（envelope 簡易）
+          if (part.instrument === "piano") {
+            node.osc.type = "triangle";
+            try { node.osc.detune.setValueAtTime(-3, startAt); } catch {}
+          }
           node.osc.frequency.setValueAtTime(n.p, startAt);
+          if (node.extras && node.ratios) {
+            node.extras.forEach((e, i) => {
+              const r = node.ratios![i] ?? 1;
+              try { e.frequency.setValueAtTime(n.p * r, startAt); } catch {}
+            });
+          }
           node.gain.gain.setValueAtTime(0.0001, startAt);
-          node.gain.gain.linearRampToValueAtTime(amp, startAt + 0.01);
+          node.gain.gain.linearRampToValueAtTime(amp, startAt + (part.instrument === "piano" ? 0.005 : 0.01));
           node.gain.gain.linearRampToValueAtTime(0.0001, stopAt);
+          // tone envelope
+          if (toneNode) {
+            const hi = Math.min(10000, n.p * (part.instrument === "upright" ? 6 : 8));
+            const lo = Math.min(2000, n.p * (part.instrument === "upright" ? 2 : 3));
+            try {
+              toneNode.frequency.setValueAtTime(hi, startAt);
+              toneNode.frequency.exponentialRampToValueAtTime(Math.max(200, lo), startAt + 0.2);
+            } catch {}
+          }
           try {
             node.osc.start(startAt);
+            if (node.extras) node.extras.forEach((e) => { try { e.start(startAt); } catch {} });
             node.started = true;
             this.activeVoices.add(node);
             node.osc.stop(stopAt);
+            if (node.extras) node.extras.forEach((e) => { try { e.stop(stopAt); } catch {} });
           } catch {}
         }
 
@@ -155,6 +225,7 @@ class Engine {
         const cleanupId = window.setTimeout(() => {
           try { node.osc.disconnect(); } catch {}
           try { node.gain.disconnect(); } catch {}
+          if (node.extras) node.extras.forEach((e) => { try { e.disconnect(); } catch {} });
           this.activeVoices.delete(node);
         }, Math.max(0, (stopAt - this.ctx!.currentTime) * 1000) + 20);
 
@@ -166,6 +237,21 @@ class Engine {
   private createVoice(kind: Part["instrument"], n: Note): OscRef {
     const osc = this.ctx!.createOscillator();
     const gain = this.ctx!.createGain();
+    if (kind === "piano") {
+      // 基本: triangle + 2つの倍音(sine)をブレンド
+      const o2 = this.ctx!.createOscillator();
+      const o3 = this.ctx!.createOscillator();
+      osc.type = "triangle";
+      o2.type = "sine";
+      o3.type = "sine";
+      // 最終的な接続は schedule 側で gain に接続
+      return { osc, gain, started: false, extras: [o2, o3], ratios: [2, 3] };
+    }
+    if (kind === "guitar") {
+      // 基本: square + bandpass でピッキングの鋭さを付加（接続は schedule 側）
+      osc.type = "square";
+      return { osc, gain, started: false };
+    }
     switch (kind) {
       case "lead":
         osc.type = "sawtooth";

@@ -10,7 +10,7 @@ export interface Note {
 }
 
 export interface Part {
-  instrument: "lead" | "bass" | "pad" | "perc";
+  instrument: "lead" | "bass" | "pad" | "perc" | "piano" | "guitar" | "upright";
   notes: Note[];
 }
 
@@ -25,4 +25,3 @@ export interface Composition {
 export function midiToHz(midi: number): number {
   return 440 * Math.pow(2, (midi - 69) / 12);
 }
-

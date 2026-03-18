@@ -39,7 +39,7 @@ const y2k: Composition = {
     { instrument: "bass", notes: [
       N(0, 1, 0.8, 43), N(1, 1, 0.8, 45), N(2, 1, 0.8, 47), N(3, 1, 0.8, 45),
     ]},
-    { instrument: "lead", notes: [
+    { instrument: "piano", notes: [
       N(0, 0.5, 0.7, 67), N(0.5, 0.5, 0.7, 69), N(1, 0.5, 0.7, 71),
       N(2, 0.5, 0.7, 69), N(2.5, 0.5, 0.7, 67), N(3, 0.5, 0.7, 64),
     ]},
@@ -61,7 +61,7 @@ const orchestra: Composition = {
       N(4, 4, 0.4, 48), N(4, 4, 0.4, 52), N(4, 4, 0.4, 55),
       N(8, 4, 0.4, 50), N(8, 4, 0.4, 54), N(8, 4, 0.4, 57),
     ]},
-    { instrument: "lead", notes: [
+    { instrument: "piano", notes: [
       N(0, 1, 0.6, 64), N(2, 1, 0.6, 67), N(4, 1, 0.6, 71), N(6, 1, 0.6, 74),
     ]},
   ],
@@ -89,11 +89,11 @@ const jazz: Composition = {
   title: "Easy Jazz",
   tempo: 110,
   parts: [
-    { instrument: "bass", notes: [
+    { instrument: "upright", notes: [
       N(0, 0.5, 0.7, 40), N(0.5, 0.5, 0.7, 42), N(1, 0.5, 0.7, 43), N(1.5, 0.5, 0.7, 45),
       N(2, 0.5, 0.7, 47), N(2.5, 0.5, 0.7, 48), N(3, 0.5, 0.7, 50), N(3.5, 0.5, 0.7, 52),
     ]},
-    { instrument: "lead", notes: [
+    { instrument: "piano", notes: [
       N(0, 0.5, 0.6, 64), N(1, 0.5, 0.6, 67), N(2, 0.5, 0.6, 71), N(3, 0.5, 0.6, 67),
     ]},
   ],
@@ -109,7 +109,7 @@ const rock: Composition = {
       N(0, 0.5, 0.9, 45), N(0.5, 0.5, 0.9, 45), N(1, 0.5, 0.9, 47), N(1.5, 0.5, 0.9, 47),
       N(2, 0.5, 0.9, 48), N(2.5, 0.5, 0.9, 48), N(3, 0.5, 0.9, 50), N(3.5, 0.5, 0.9, 50),
     ]},
-    { instrument: "lead", notes: [
+    { instrument: "guitar", notes: [
       N(0, 0.25, 0.7, 64), N(0.25, 0.25, 0.7, 64), N(0.5, 0.25, 0.7, 67), N(0.75, 0.25, 0.7, 67),
     ]},
   ],
@@ -124,7 +124,7 @@ const healing: Composition = {
     { instrument: "pad", notes: [
       N(0, 8, 0.3, 57), N(0, 8, 0.3, 60), N(0, 8, 0.3, 64),
     ]},
-    { instrument: "lead", notes: [
+    { instrument: "piano", notes: [
       N(0, 2, 0.5, 69), N(4, 2, 0.5, 67),
     ]},
   ],
@@ -140,7 +140,7 @@ const ballad: Composition = {
       N(0, 4, 0.3, 60), N(0, 4, 0.3, 64), N(0, 4, 0.3, 67),
       N(4, 4, 0.3, 57), N(4, 4, 0.3, 60), N(4, 4, 0.3, 64),
     ]},
-    { instrument: "lead", notes: [
+    { instrument: "piano", notes: [
       N(0, 1, 0.5, 72), N(1, 1, 0.5, 71), N(2, 2, 0.5, 69),
     ]},
   ],

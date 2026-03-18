@@ -11,7 +11,7 @@ export function usePlayerState() {
   const [state, setState] = useState<PlayerState>(() => ({
     playlist: samplePlaylist,
     queue: initQueue(samplePlaylist, 0, false),
-    ui: { isQueueOpen: true, isPlaying: false },
+    ui: { isQueueOpen: true, isPlaying: false, positionSec: 0 },
   }));
 
   const currentTrack = useMemo(
