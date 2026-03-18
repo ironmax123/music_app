@@ -1,0 +1,202 @@
+:root {
+  --bg: #0f1115;
+  --panel: #171a21;
+  --panel-2: #1c2029;
+  --text: #e7e9ee;
+  --muted: #a6adbb;
+  --accent-500: #4f8cff;
+  --accent-600: #3a76f0;
+  --danger: #ff5f5f;
+  --radius: 12px;
+  --radius-sm: 10px;
+  --shadow: 0 6px 20px rgba(0,0,0,0.35);
+  --art-max: 480px; /* max size for square album art */
+}
+
+/* Layout */
+.screen {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 16px;
+  height: 100dvh;
+  padding: 20px;
+  background: var(--bg);
+  color: var(--text);
+  box-sizing: border-box;
+}
+.screen[data-queue-open="false"] {
+  grid-template-columns: 1fr;
+}
+
+.leftColumn {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 16px;
+  min-width: 0;
+}
+
+.nowPlayingCard {
+  background: linear-gradient(180deg, var(--panel), var(--panel-2));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  display: grid;
+  grid-template-rows: auto auto auto;
+  gap: 16px;
+}
+
+.jacket {
+  width: 100%;
+  max-width: var(--art-max);
+  aspect-ratio: 1 / 1; /* album art must be square */
+  border-radius: var(--radius-sm);
+  margin-inline: auto;
+}
+
+.meta {
+  display: grid;
+  gap: 4px;
+}
+.title {
+  font-size: 24px;
+  font-weight: 700;
+}
+.artist {
+  color: var(--muted);
+  font-weight: 500;
+}
+.playlist {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.progressBar {
+  height: 6px;
+  background: #0d0f14;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progressFill {
+  height: 100%;
+  background: var(--accent-500);
+}
+
+.timeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.controlsRow {
+  background: var(--panel);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px 16px;
+  display: grid;
+  grid-template-columns: 48px 1fr 48px;
+  align-items: center;
+  gap: 8px;
+}
+
+.controlsCluster {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.iconButton {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text);
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.iconButton:hover { background: rgba(255,255,255,0.06); }
+.iconButton[data-active="true"] {
+  border-color: var(--accent-500);
+  background: rgba(79, 140, 255, 0.15);
+}
+.icon { filter: saturate(0.9); }
+
+.primaryButton {
+  background: var(--accent-600);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(58,118,240,0.4);
+}
+.primaryButton:hover { filter: brightness(1.05); }
+
+.primaryIconButton {
+  background: var(--accent-600);
+  color: white;
+  border: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(58,118,240,0.45);
+}
+.primaryIconButton:hover { filter: brightness(1.05); }
+
+.queueSide {
+  background: var(--panel);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+  transition: width 0.2s ease, opacity 0.2s ease;
+}
+/* when side is unmounted we collapse via container switch */
+
+.queueHeader {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-weight: 600;
+}
+.queueList {
+  overflow: auto;
+}
+.queueEmpty {
+  color: var(--muted);
+  padding: 16px;
+}
+
+.queueItem {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 12px;
+  width: 100%;
+  background: transparent;
+  color: var(--text);
+  border: none;
+  text-align: left;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+.queueItem:hover { background: rgba(255,255,255,0.05); }
+.queueIndex { color: var(--muted); font-size: 12px; padding-top: 2px; }
+.queueText { display: grid; gap: 2px; }
+.queueTitle { font-weight: 600; }
+.queueArtist { color: var(--muted); font-size: 12px; }
+
+/* Responsive: hide sidebar when narrow */
+@media (max-width: 980px) {
+  .screen { grid-template-columns: 1fr; }
+}
