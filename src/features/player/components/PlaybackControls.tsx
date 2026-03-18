@@ -7,6 +7,7 @@ interface Props {
   isPlaying: boolean;
   shuffle: boolean;
   isQueueOpen: boolean;
+  onPrimeAudio?: () => void;
   onTogglePlay: () => void;
   onPrev: () => void;
   onNext: () => void;
@@ -18,6 +19,7 @@ export function PlaybackControls({
   isPlaying,
   shuffle,
   isQueueOpen,
+  onPrimeAudio,
   onTogglePlay,
   onPrev,
   onNext,
@@ -41,6 +43,8 @@ export function PlaybackControls({
         <button
           className={styles.primaryIconButton}
           aria-label={isPlaying ? "Pause" : "Play"}
+          onMouseDown={onPrimeAudio}
+          onTouchStart={onPrimeAudio}
           onClick={onTogglePlay}
         >
           {isPlaying ? <PauseIcon /> : <PlayIcon />}

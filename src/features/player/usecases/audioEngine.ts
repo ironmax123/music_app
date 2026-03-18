@@ -80,6 +80,24 @@ class Engine {
     this.scheduleWindow(comp);
     // 以降は小刻みに先までスケジュールしていく（progress/終端同期用）
     this.schedulerId = window.setInterval(() => this.tickSchedule(comp), 100);
+
+    // フェイルセーフ: 200ms 後に一つも音が開始していなければ短いトーンで起動
+    window.setTimeout(() => {
+      if (!this.ctx || !this.master) return;
+      if (!this.playing) return;
+      if (this.activeVoices.size > 0) return;
+      try {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        gain.gain.value = 0.1;
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+        osc.connect(gain);
+        gain.connect(this.master);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.25);
+      } catch {}
+    }, 200);
   }
 
   private schedulePart(part: Part, startBeat: number, endBeat: number) {
@@ -213,6 +231,25 @@ class Engine {
 
   getDurationSec(): number {
     return this.durationSec || 0;
+  }
+
+  // ユーザー操作直前に呼び出し、AudioContext を確実に起動するためのプライム関数
+  async prime() {
+    this.initIfNeeded();
+    if (!this.ctx || !this.master) return;
+    try { await this.ctx.resume(); } catch {}
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      gain.gain.value = 0.0001; // ほぼ無音
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(440, now);
+      osc.connect(gain);
+      gain.connect(this.master);
+      osc.start(now);
+      osc.stop(now + 0.05);
+    } catch {}
   }
 }
 

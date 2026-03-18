@@ -24,6 +24,7 @@ export function PlayerScreen() {
           isPlaying={state.ui.isPlaying}
           shuffle={state.queue.shuffle}
           isQueueOpen={state.ui.isQueueOpen}
+          onPrimeAudio={actions.primeAudio}
           onTogglePlay={actions.togglePlay}
           onPrev={actions.prev}
           onNext={actions.next}
