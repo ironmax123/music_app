@@ -4,10 +4,11 @@ import { NowPlayingPanel } from "./components/NowPlayingPanel";
 import { PlaybackControls } from "./components/PlaybackControls";
 import { QueueSidebar } from "./components/QueueSidebar";
 import { usePlayerState } from "./state/playerState";
+import type { Playlist } from "./domain/types";
 import styles from "./components/styles.module.css";
 
-export function PlayerScreen() {
-  const { state, currentTrack, nextTracks, progress, actions } = usePlayerState();
+export function PlayerScreen({ playlist }: { playlist: Playlist }) {
+  const { state, currentTrack, nextTracks, progress, actions } = usePlayerState(playlist);
 
   return (
     <main className={styles.screen} data-queue-open={state.ui.isQueueOpen}>
@@ -37,6 +38,7 @@ export function PlayerScreen() {
           isOpen
           items={nextTracks.map((t) => ({ title: t.title, artist: t.artist }))}
           onSelect={(i) => actions.selectFromQueue(i)}
+          onClose={actions.toggleQueueOpen}
         />
       ) : null}
     </main>

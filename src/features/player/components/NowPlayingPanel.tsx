@@ -27,12 +27,14 @@ export function NowPlayingPanel({ title, artist, playlistName, coverColor, posit
         <div className={styles.artist}>{artist}</div>
         {playlistName ? <div className={styles.playlist}>{playlistName}</div> : null}
       </div>
-      <div className={styles.progressBar} aria-label="Playback progress">
-        <div className={styles.progressFill} style={{ width: `${ratio * 100}%` }} />
-      </div>
-      <div className={styles.timeRow} aria-label="Playback time">
-        <span>{formatTime(positionSec)}</span>
-        <span>{formatTime(durationSec)}</span>
+      <div className={styles.progressBlock}>
+        <div className={styles.progressBar} aria-label="Playback progress">
+          <div className={styles.progressFill} style={{ width: `${ratio * 100}%` }} />
+        </div>
+        <div className={styles.timeRow} aria-label="Playback time">
+          <span>{formatTime(positionSec)}</span>
+          <span>{formatTime(durationSec)}</span>
+        </div>
       </div>
     </section>
   );

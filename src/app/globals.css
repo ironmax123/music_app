@@ -1,5 +1,17 @@
 :root {
   color-scheme: dark;
+  /* Shared theme variables */
+  --bg: #0f1115;
+  --panel: #171a21;
+  --panel-2: #1c2029;
+  --text: #e7e9ee;
+  --muted: #a6adbb;
+  --accent-500: #4f8cff;
+  --accent-600: #3a76f0;
+  --danger: #ff5f5f;
+  --radius: 12px;
+  --radius-sm: 10px;
+  --shadow: 0 6px 20px rgba(0,0,0,0.35);
 }
 
 * { box-sizing: border-box; }

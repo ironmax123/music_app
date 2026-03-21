@@ -146,8 +146,78 @@ const ballad: Composition = {
   ],
 };
 
+// ---- Lofi (Deep Focus) motifs ----
+// lo-fi 1) 朝の柔光 (80 BPM, Rhodes/pad風 + ウッドベース)
+const lofi1: Composition = {
+  id: "cmp-lofi-1",
+  title: "Soft Morning",
+  tempo: 80,
+  parts: [
+    { instrument: "pad", notes: [
+      // gentle sustained pad only (no bass)
+      N(0, 8, 0.08, 48), N(0, 8, 0.08, 55), N(0, 8, 0.08, 60),
+    ]},
+    { instrument: "piano", notes: [
+      // rare, soft Rhodes-like triads
+      N(0.0, 0.75, 0.18, 60), N(0.0, 0.75, 0.18, 64), N(0.0, 0.75, 0.18, 67),
+      N(2.0, 0.5, 0.16, 65), N(2.0, 0.5, 0.16, 69), N(2.0, 0.5, 0.16, 72),
+    ]},
+  ],
+};
+
+// lo-fi 2) 雨粒のリズム (76 BPM, ローパスベース + 小さなtick)
+const lofi2: Composition = {
+  id: "cmp-lofi-2",
+  title: "Rain Rhythm",
+  tempo: 76,
+  parts: [
+    { instrument: "pad", notes: [
+      // mellow minor pad wash
+      N(0, 8, 0.07, 45), N(0, 8, 0.07, 52), N(0, 8, 0.07, 57),
+    ]},
+    { instrument: "piano", notes: [
+      // tiny, sparse chimes
+      N(1.5, 0.25, 0.14, 57), N(3.0, 0.25, 0.14, 60),
+    ]},
+  ],
+};
+
+// lo-fi 3) ペン先のドローイング (84 BPM, 軽いパターン)
+const lofi3: Composition = {
+  id: "cmp-lofi-3",
+  title: "Pencil Sketch",
+  tempo: 84,
+  parts: [
+    { instrument: "pad", notes: [
+      N(0, 8, 0.06, 50), N(0, 8, 0.06, 53), N(0, 8, 0.06, 57),
+    ]},
+    { instrument: "piano", notes: [
+      N(2.0, 0.5, 0.16, 62), N(3.0, 0.25, 0.14, 65),
+    ]},
+  ],
+};
+
+// lo-fi 4) タスクスイッチャー (78 BPM, II–V–I 感)
+const lofi4: Composition = {
+  id: "cmp-lofi-4",
+  title: "Task Switcher",
+  tempo: 78,
+  parts: [
+    { instrument: "pad", notes: [
+      N(0, 8, 0.06, 50), N(0, 8, 0.06, 57), N(0, 8, 0.06, 60),
+    ]},
+    { instrument: "piano", notes: [
+      // soft II–V–I color, very gentle
+      N(0, 0.5, 0.16, 62), N(0, 0.5, 0.16, 65), N(0, 0.5, 0.16, 69),
+      N(2, 0.5, 0.15, 65), N(2, 0.5, 0.15, 69), N(2, 0.5, 0.15, 72),
+      N(3, 0.5, 0.14, 57), N(3, 0.5, 0.14, 60), N(3, 0.5, 0.14, 64),
+    ]},
+  ],
+};
+
 export const compositions: Composition[] = [
   edm, y2k, orchestra, kpop, jazz, rock, healing, ballad,
+  lofi1, lofi2, lofi3, lofi4,
 ];
 
 export function getCompositionMap() {

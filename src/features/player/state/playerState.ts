@@ -1,18 +1,21 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { samplePlaylist } from "../data/samplePlaylist";
-import type { PlayerState } from "../domain/types";
+import type { PlayerState, Playlist } from "../domain/types";
 import { audioEngine } from "../usecases/audioEngine";
 import { getCompositionMap } from "../data/compositions/library";
 import { getNextIndices, initQueue, nextQueueState, prevQueueState, toggleShuffleQueue } from "../usecases/queue";
 
-export function usePlayerState() {
-  const [state, setState] = useState<PlayerState>(() => ({
-    playlist: samplePlaylist,
-    queue: initQueue(samplePlaylist, 0, false),
-    ui: { isQueueOpen: true, isPlaying: false, positionSec: 0 },
-  }));
+export function usePlayerState(initialPlaylist: Playlist) {
+  const [state, setState] = useState<PlayerState>(() => {
+    const isDesktop = typeof window !== "undefined" ? window.innerWidth > 980 : true;
+    return {
+      playlist: initialPlaylist,
+      queue: initQueue(initialPlaylist, 0, false),
+      // Desktop keeps sidebar open (as before), mobile defaults hidden
+      ui: { isQueueOpen: isDesktop, isPlaying: false, positionSec: 0 },
+    } as PlayerState;
+  });
 
   const currentTrack = useMemo(
     () => state.playlist.tracks[state.queue.order[0] ?? 0],

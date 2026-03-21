@@ -1,0 +1,45 @@
+:root {}
+
+.screen {
+  background: var(--bg);
+  color: var(--text);
+  display: block;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+}
+.brand { font-weight: 800; letter-spacing: 0.4px; }
+
+.content {
+  padding: 6px 12px 10px;
+  display: grid;
+  gap: 6px;
+}
+.heading {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  margin: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+/* optional placeholder search visual (non-functional) */
+.search {
+  width: 100%;
+  max-width: 560px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 999px;
+  padding: 10px 14px;
+  color: var(--muted);
+  font-size: 14px;
+}

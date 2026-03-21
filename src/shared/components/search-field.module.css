@@ -1,0 +1,24 @@
+.wrapper {
+  display: grid;
+  grid-auto-flow: column;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 10px 0 8px;
+  color: var(--muted);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 999px;
+}
+.icon { color: var(--muted); }
+.input {
+  appearance: none;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  width: 200px;
+}
+.input::placeholder { color: var(--muted); }
+
