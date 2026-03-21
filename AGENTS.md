@@ -10,6 +10,11 @@ Scope: applies to the entire repository.
 - Favor small, reusable UI components; screens should be thin orchestrators.
 - Keep styles cohesive: use module CSS and shared CSS variables where possible.
 
+## Commit Messages
+- Do not use `chore` for any commit. Its use is prohibited across this repository.
+- Use precise Conventional Commit types instead: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `build`, `ci`, `perf`, `revert`.
+- If none of the above types apply, reframe or split the change so that each commit reflects a meaningful, specific type.
+
 ## Postmortems
 - When a critical UX regression occurs (e.g., audio not playing, overlapping playback, broken progress sync), add or update a postmortem under `docs/` describing:
   - Symptoms and impact
