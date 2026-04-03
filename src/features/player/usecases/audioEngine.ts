@@ -18,6 +18,7 @@ type PlayOptions = { durationSec?: number; onEnded?: () => void };
 class Engine {
   private ctx: AudioContext | null = null; // AudioContext の単一管理
   private master: GainNode | null = null;
+  private limiter: DynamicsCompressorNode | null = null;
   private scheduledTimeouts: number[] = [];
   private schedulerId: number | null = null; // 進行スケジューラ setInterval ID
   private playing = false;
@@ -34,8 +35,19 @@ class Engine {
     // ここで Web Audio API を使用: AudioContext 生成
     this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
     this.master = this.ctx.createGain();
-    this.master.gain.value = 0.9;
-    this.master.connect(this.ctx.destination);
+    // 全体ヘッドルームを確保（和音合成時のクリップ回避）
+    this.master.gain.value = 0.3;
+    // 簡易リミッターをマスター直後に配置
+    this.limiter = this.ctx.createDynamicsCompressor();
+    try {
+      this.limiter.threshold.setValueAtTime(-18, this.ctx.currentTime);
+      this.limiter.knee.setValueAtTime(24, this.ctx.currentTime);
+      this.limiter.ratio.setValueAtTime(12, this.ctx.currentTime);
+      this.limiter.attack.setValueAtTime(0.003, this.ctx.currentTime);
+      this.limiter.release.setValueAtTime(0.25, this.ctx.currentTime);
+    } catch {}
+    this.master.connect(this.limiter);
+    this.limiter.connect(this.ctx.destination);
   }
 
   stop() {
@@ -95,7 +107,7 @@ class Engine {
       try {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        gain.gain.value = 0.1;
+        gain.gain.value = 0.02;
         osc.type = "sine";
         osc.frequency.setValueAtTime(440, this.ctx.currentTime);
         osc.connect(gain);
@@ -115,7 +127,8 @@ class Engine {
     for (let loopStart = Math.floor(startBeat / loopLen) * loopLen; loopStart < endBeat; loopStart += loopLen) {
       for (const n of part.notes) {
         const nb = loopStart + n.t;
-        if (nb + n.d < startBeat || nb > endBeat) continue;
+        // Use half-open interval [startBeat, endBeat) to avoid double-scheduling at boundaries
+        if (nb + n.d <= startBeat || nb >= endBeat) continue;
         if (nb > totalBeats) continue;
 
         const startAt = this.t0 + nb * this.beatSec;
@@ -123,7 +136,7 @@ class Engine {
         const stopAt = startAt + durSec;
 
         const node = this.createVoice(part.instrument, n);
-        node.gain.gain.value = n.v * (part.instrument === "pad" ? 0.5 : 1);
+        node.gain.gain.value = n.v * (part.instrument === "pad" ? 0.35 : 1);
         const amp = node.gain.gain.value;
         // instrument-specific coloration
         let inputNode: AudioNode = node.osc;
@@ -136,9 +149,19 @@ class Engine {
           inputNode.connect(bp);
           inputNode = bp;
         }
-        // piano/upright: add gentle tone lowpass with short decay
+        // pad: add fixed high-pass then low-pass; piano/upright: low-pass only
         let toneNode: BiquadFilterNode | null = null;
-        if (part.instrument === "piano" || part.instrument === "upright") {
+        if (part.instrument === "pad") {
+          const hp = this.ctx.createBiquadFilter();
+          hp.type = "highpass";
+          hp.frequency.setValueAtTime(160, this.ctx.currentTime);
+          inputNode.connect(hp);
+          const lp = this.ctx.createBiquadFilter();
+          lp.type = "lowpass";
+          hp.connect(lp);
+          inputNode = lp;
+          toneNode = lp;
+        } else if (part.instrument === "piano" || part.instrument === "upright") {
           toneNode = this.ctx.createBiquadFilter();
           toneNode.type = "lowpass";
           inputNode.connect(toneNode);
@@ -167,12 +190,14 @@ class Engine {
               });
             }
           node.gain.gain.setValueAtTime(0.0001, now);
-          node.gain.gain.linearRampToValueAtTime(amp, now + (part.instrument === "piano" ? 0.005 : 0.01));
+          const attack = part.instrument === "piano" ? 0.005 : part.instrument === "pad" ? 0.06 : 0.01;
+          node.gain.gain.linearRampToValueAtTime(amp, now + attack);
           node.gain.gain.linearRampToValueAtTime(0.0001, now + durSec);
           // tone envelope
           if (toneNode) {
-            const hi = Math.min(10000, n.p * (part.instrument === "upright" ? 6 : 8));
-            const lo = Math.min(2000, n.p * (part.instrument === "upright" ? 2 : 3));
+            const isPad = part.instrument === "pad";
+            const hi = isPad ? 3200 : Math.min(10000, n.p * (part.instrument === "upright" ? 6 : 8));
+            const lo = isPad ? 1400 : Math.min(2000, n.p * (part.instrument === "upright" ? 2 : 3));
             try {
               toneNode.frequency.setValueAtTime(hi, now);
               toneNode.frequency.exponentialRampToValueAtTime(Math.max(200, lo), now + 0.2);
@@ -200,12 +225,14 @@ class Engine {
             });
           }
           node.gain.gain.setValueAtTime(0.0001, startAt);
-          node.gain.gain.linearRampToValueAtTime(amp, startAt + (part.instrument === "piano" ? 0.005 : 0.01));
+          const attack = part.instrument === "piano" ? 0.005 : part.instrument === "pad" ? 0.06 : 0.01;
+          node.gain.gain.linearRampToValueAtTime(amp, startAt + attack);
           node.gain.gain.linearRampToValueAtTime(0.0001, stopAt);
           // tone envelope
           if (toneNode) {
-            const hi = Math.min(10000, n.p * (part.instrument === "upright" ? 6 : 8));
-            const lo = Math.min(2000, n.p * (part.instrument === "upright" ? 2 : 3));
+            const isPad = part.instrument === "pad";
+            const hi = isPad ? 3200 : Math.min(10000, n.p * (part.instrument === "upright" ? 6 : 8));
+            const lo = isPad ? 1400 : Math.min(2000, n.p * (part.instrument === "upright" ? 2 : 3));
             try {
               toneNode.frequency.setValueAtTime(hi, startAt);
               toneNode.frequency.exponentialRampToValueAtTime(Math.max(200, lo), startAt + 0.2);
@@ -260,7 +287,7 @@ class Engine {
         osc.type = "square";
         break;
       case "pad":
-        osc.type = "triangle";
+        osc.type = "sine";
         break;
       case "perc":
         osc.type = "sine";

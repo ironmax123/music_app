@@ -19,11 +19,28 @@ export const lofiDeepFocusPlaylist: Playlist = {
   ],
 };
 
-export const playlists: Playlist[] = [samplePlaylist, lofiDeepFocusPlaylist];
+// Café Ambient Lofi playlist
+export const cafeAmbientPlaylist: Playlist = {
+  id: "pl-cafe-ambient",
+  name: "Café Ambient Lofi",
+  tracks: [
+    { id: "cafe-1", title: "角砂糖と湯気", artist: "CafeUnit", playlistName: "Café Ambient Lofi", coverColor: "#b7885b", compositionId: "cmp-cafe-1", durationSec: 165 },
+    { id: "cafe-2", title: "木のテーブル", artist: "CafeUnit", playlistName: "Café Ambient Lofi", coverColor: "#9a7b68", compositionId: "cmp-cafe-2", durationSec: 160 },
+    { id: "cafe-3", title: "本をめくる手", artist: "CafeUnit", playlistName: "Café Ambient Lofi", coverColor: "#c2a07d", compositionId: "cmp-cafe-3", durationSec: 158 },
+    { id: "cafe-4", title: "夕焼けフィルター", artist: "CafeUnit", playlistName: "Café Ambient Lofi", coverColor: "#d6b08c", compositionId: "cmp-cafe-4", durationSec: 170 },
+    { id: "cafe-5", title: "角砂糖と湯気 - alt", artist: "CafeUnit", playlistName: "Café Ambient Lofi", coverColor: "#b08e6e", compositionId: "cmp-cafe-1", durationSec: 150 },
+    { id: "cafe-6", title: "木のテーブル - alt", artist: "CafeUnit", playlistName: "Café Ambient Lofi", coverColor: "#8f7a63", compositionId: "cmp-cafe-2", durationSec: 152 },
+    { id: "cafe-7", title: "本をめくる手 - alt", artist: "CafeUnit", playlistName: "Café Ambient Lofi", coverColor: "#b99b77", compositionId: "cmp-cafe-3", durationSec: 162 },
+    { id: "cafe-8", title: "夕焼けフィルター - alt", artist: "CafeUnit", playlistName: "Café Ambient Lofi", coverColor: "#ccab85", compositionId: "cmp-cafe-4", durationSec: 160 },
+    { id: "cafe-9", title: "木のテーブル - night", artist: "CafeUnit", playlistName: "Café Ambient Lofi", coverColor: "#7f6b57", compositionId: "cmp-cafe-2", durationSec: 168 },
+    { id: "cafe-10", title: "角砂糖と湯気 - morning", artist: "CafeUnit", playlistName: "Café Ambient Lofi", coverColor: "#a88564", compositionId: "cmp-cafe-1", durationSec: 164 },
+  ],
+};
+
+export const playlists: Playlist[] = [samplePlaylist, lofiDeepFocusPlaylist, cafeAmbientPlaylist];
 
 export function getPlaylistById(id: string): Playlist | undefined {
   return playlists.find((p) => p.id === id);
 }
 
 export const defaultPlaylist = samplePlaylist;
-
